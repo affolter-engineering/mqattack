@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Result};
 use clap::Args;
-use rumqttc::{MqttOptions, QoS, TlsConfiguration, Transport};
+use rumqttc::{AsyncClient, Event, EventLoop, MqttOptions, Packet, QoS, TlsConfiguration, Transport};
 use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, ServerName, UnixTime};
 use rustls::{ClientConfig, DigitallySignedStruct, Error as TlsError, RootCertStore, SignatureScheme};
@@ -207,5 +207,50 @@ pub fn parse_qos(level: u8) -> Result<QoS> {
         2 => Ok(QoS::ExactlyOnce),
         _ => bail!("invalid QoS level: {} (must be 0, 1 or 2)", level),
     }
+}
+
+// ── Shared event-loop driver ──────────────────────────────────────────────────
+
+/// Drive `eventloop` until `on_publish` returns `false`, the connection drops,
+/// or the caller's enclosing `tokio::select!` branch is cancelled.
+///
+/// `on_publish` receives each incoming PUBLISH packet and returns `true` to
+/// keep running or `false` to stop.
+pub async fn poll_loop<F>(eventloop: &mut EventLoop, mut on_publish: F)
+where
+    F: FnMut(rumqttc::Publish) -> bool,
+{
+    loop {
+        match eventloop.poll().await {
+            Ok(Event::Incoming(Packet::ConnAck(ack))) => {
+                eprintln!("[+] Connected (session_present={})", ack.session_present);
+            }
+            Ok(Event::Incoming(Packet::Publish(p))) => {
+                if !on_publish(p) {
+                    break;
+                }
+            }
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("[!] Connection error: {}", e);
+                break;
+            }
+        }
+    }
+}
+
+/// Convenience: build an `AsyncClient` + `EventLoop` from connection args,
+/// subscribe to each topic at the given QoS, and return both handles.
+pub async fn connect_and_subscribe(
+    args: &ConnectionArgs,
+    topics: &[String],
+    qos: QoS,
+) -> Result<(AsyncClient, EventLoop)> {
+    let opts = build_options(args)?;
+    let (client, eventloop) = AsyncClient::new(opts, 64);
+    for topic in topics {
+        client.subscribe(topic, qos).await?;
+    }
+    Ok((client, eventloop))
 }
 

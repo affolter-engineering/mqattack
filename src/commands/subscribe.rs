@@ -1,7 +1,6 @@
-use crate::mqtt::client::{build_options, parse_qos, ConnectionArgs};
+use crate::mqtt::client::{connect_and_subscribe, parse_qos, poll_loop, ConnectionArgs};
 use anyhow::Result;
 use clap::Args;
-use rumqttc::{AsyncClient, Event, Packet};
 use tokio::signal;
 
 #[derive(Args, Debug)]
@@ -28,13 +27,8 @@ pub struct SubscribeArgs {
 
 pub async fn run(args: SubscribeArgs) -> Result<()> {
     let qos = parse_qos(args.qos)?;
-    let opts = build_options(&args.connection)?;
-    let (client, mut eventloop) = AsyncClient::new(opts, 64);
-
-    // Enqueue subscriptions — they are sent once the connection is established.
-    for topic in &args.topics {
-        client.subscribe(topic, qos).await?;
-    }
+    let (client, mut eventloop) =
+        connect_and_subscribe(&args.connection, &args.topics, qos).await?;
 
     eprintln!(
         "[*] Connecting to {}:{}",
@@ -45,54 +39,36 @@ pub async fn run(args: SubscribeArgs) -> Result<()> {
     }
     eprintln!("[*] Press Ctrl+C to stop\n");
 
+    let count = args.count;
+    let hex = args.hex;
     let mut received: u32 = 0;
 
-    loop {
-        tokio::select! {
-            event = eventloop.poll() => {
-                match event {
-                    Ok(Event::Incoming(Packet::ConnAck(ack))) => {
-                        eprintln!("[+] Connected (session_present={})", ack.session_present);
-                    }
-                    Ok(Event::Incoming(Packet::Publish(p))) => {
-                        let ts = chrono::Local::now().format("%H:%M:%S%.3f");
-                        let payload_str = if args.hex {
-                            hex::encode(&p.payload)
-                        } else {
-                            String::from_utf8_lossy(&p.payload).into_owned()
-                        };
-                        println!(
-                            "[{}] topic={} qos={} retain={} len={} | {}",
-                            ts,
-                            p.topic,
-                            p.qos as u8,
-                            p.retain,
-                            p.payload.len(),
-                            payload_str,
-                        );
-                        received += 1;
-                        if let Some(max) = args.count {
-                            if received >= max {
-                                eprintln!("\n[*] Received {} message(s), stopping.", received);
-                                client.disconnect().await.ok();
-                                break;
-                            }
-                        }
-                    }
-                    Ok(_) => {}
-                    Err(e) => {
-                        eprintln!("[!] Connection error: {}", e);
-                        break;
-                    }
+    tokio::select! {
+        _ = poll_loop(&mut eventloop, |p| {
+            let ts = chrono::Local::now().format("%H:%M:%S%.3f");
+            let payload_str = if hex {
+                hex::encode(&p.payload)
+            } else {
+                String::from_utf8_lossy(&p.payload).into_owned()
+            };
+            println!(
+                "[{}] topic={} qos={} retain={} len={} | {}",
+                ts, p.topic, p.qos as u8, p.retain, p.payload.len(), payload_str,
+            );
+            received += 1;
+            count.map_or(true, |max| received < max)
+        }) => {
+            if let Some(max) = count {
+                if received >= max {
+                    eprintln!("\n[*] Received {} message(s), stopping.", received);
                 }
             }
-            _ = signal::ctrl_c() => {
-                eprintln!("\n[*] Interrupted, disconnecting...");
-                client.disconnect().await.ok();
-                break;
-            }
+        }
+        _ = signal::ctrl_c() => {
+            eprintln!("\n[*] Interrupted, disconnecting...");
         }
     }
 
+    client.disconnect().await.ok();
     Ok(())
 }

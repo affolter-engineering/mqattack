@@ -18,6 +18,8 @@ enum Commands {
     Subscribe(commands::subscribe::SubscribeArgs),
     /// Publish a message to a topic
     Publish(commands::publish::PublishArgs),
+    /// Collect broker metadata from the $SYS/# topic
+    SysInfo(commands::sys_info::SysInfoArgs),
 }
 
 #[tokio::main]
@@ -27,5 +29,6 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Subscribe(args) => commands::subscribe::run(args).await,
         Commands::Publish(args) => commands::publish::run(args).await,
+        Commands::SysInfo(args) => commands::sys_info::run(args).await,
     }
 }

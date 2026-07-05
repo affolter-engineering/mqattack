@@ -90,6 +90,15 @@ $ mqattack subscribe --tls --jwt 'eyJhbGci...' -H broker.example.com -p 8883 -t 
 
 # Self-signed cert — skip verification
 $ mqattack subscribe --insecure -H 192.168.1.10 -p 8883 -t '#'
+
+# Collect for 5 seconds, print a grouped summary
+$ mqattack sys-info -H 192.168.1.10
+
+# Longer collection window
+$ mqattack sys-info -H broker.example.com --tls -p 8883 -w 15
+
+# Stream values live
+$ mqattack sys-info -H 192.168.1.10 --live
 ```
 
 ### Publish
@@ -113,7 +122,7 @@ $ mqattack publish -t test/topic -m 'hello'
 $ mqattack publish -H 192.168.1.10 -t alerts/door -m 'open' -q 1 -r
 
 # Pipe payload from stdin
-echo '{"cmd":"reboot"}' | mqattack publish -t device/1/cmd -m -
+$ echo '{"cmd":"reboot"}' | mqattack publish -t device/1/cmd -m -
 
 # Publish over TLS with JWT
 $ mqattack publish --tls --jwt 'eyJhbGci...' \
