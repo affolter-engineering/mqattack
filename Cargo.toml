@@ -1,0 +1,23 @@
+[package]
+name = "mqattack"
+version = "0.1.0"
+edition = "2024"
+description = "MQTT penetration testing tool"
+authors = ["Fabian Affolter <fabian@affolter-engineering.ch>"]
+license = "MIT"
+repository = "https://github.com/affolter-engineering/mqattack"
+readme = "README.md"
+keywords = ["mqtt", "security", "pentest", "iot"]
+categories = ["command-line-utilities", "network-programming"]
+
+[[bin]]
+name = "mqattack"
+path = "src/main.rs"
+
+[dependencies]
+rumqttc = "0.24"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+chrono = "0.4"
+hex = "0.4"
