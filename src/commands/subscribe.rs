@@ -28,7 +28,7 @@ pub struct SubscribeArgs {
 
 pub async fn run(args: SubscribeArgs) -> Result<()> {
     let qos = parse_qos(args.qos)?;
-    let opts = build_options(&args.connection);
+    let opts = build_options(&args.connection)?;
     let (client, mut eventloop) = AsyncClient::new(opts, 64);
 
     // Enqueue subscriptions — they are sent once the connection is established.

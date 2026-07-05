@@ -344,6 +344,9 @@ dependencies = [
  "clap",
  "hex",
  "rumqttc",
+ "rustls",
+ "rustls-native-certs",
+ "rustls-pemfile",
  "tokio",
 ]
 

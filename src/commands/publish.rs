@@ -28,7 +28,7 @@ pub struct PublishArgs {
 
 pub async fn run(args: PublishArgs) -> Result<()> {
     let qos = parse_qos(args.qos)?;
-    let opts = build_options(&args.connection);
+    let opts = build_options(&args.connection)?;
     let (client, mut eventloop) = AsyncClient::new(opts, 16);
 
     let payload: Vec<u8> = if args.message == "-" {
