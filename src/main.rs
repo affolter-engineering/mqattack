@@ -22,6 +22,8 @@ enum Commands {
     SysInfo(commands::sys_info::SysInfoArgs),
     /// Enumerate active topics using a wordlist or brute-force
     EnumTopics(commands::enum_topics::EnumTopicsArgs),
+    /// Test subscribe/publish ACL permissions for one or more topics
+    CheckAcl(commands::check_acl::CheckAclArgs),
 }
 
 #[tokio::main]
@@ -33,5 +35,6 @@ async fn main() -> anyhow::Result<()> {
         Commands::Publish(args) => commands::publish::run(args).await,
         Commands::SysInfo(args) => commands::sys_info::run(args).await,
         Commands::EnumTopics(args) => commands::enum_topics::run(args).await,
+        Commands::CheckAcl(args) => commands::check_acl::run(args).await,
     }
 }
