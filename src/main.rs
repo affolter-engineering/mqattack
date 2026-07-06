@@ -20,6 +20,8 @@ enum Commands {
     Publish(commands::publish::PublishArgs),
     /// Collect broker metadata from the $SYS/# topic
     SysInfo(commands::sys_info::SysInfoArgs),
+    /// Enumerate active topics using a wordlist or brute-force
+    EnumTopics(commands::enum_topics::EnumTopicsArgs),
 }
 
 #[tokio::main]
@@ -30,5 +32,6 @@ async fn main() -> anyhow::Result<()> {
         Commands::Subscribe(args) => commands::subscribe::run(args).await,
         Commands::Publish(args) => commands::publish::run(args).await,
         Commands::SysInfo(args) => commands::sys_info::run(args).await,
+        Commands::EnumTopics(args) => commands::enum_topics::run(args).await,
     }
 }

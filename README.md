@@ -133,6 +133,20 @@ $ mqattack publish --cert client.crt --key client.key --cafile ca.crt \
   -H broker.example.com -p 8883 -t test -m 'hello'
 ```
 
+### Enumerate topics
+
+```bash
+# Wordlist enumeration
+mqattack enum-topics -H 192.168.1.10 -w mqtt-topics.txt
+
+# Brute-force single-level topics under "home/"
+mqattack enum-topics -H 192.168.1.10 --brute --prefix home --max-length 4
+
+# Two-level brute-force (home/word/word) with longer window
+mqattack enum-topics -H 192.168.1.10 --brute --prefix home --depth 2 -t 10
+```
+
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
