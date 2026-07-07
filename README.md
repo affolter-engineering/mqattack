@@ -6,6 +6,7 @@ A Rust-based MQTT penetration testing tool for the command line.
 
 - **Subscribe** - listen to one or more topic filters
 - **Publish** - send a payload to a topic
+- **Fingerprinting** - allows to identify the MQTT broker
 - **Check ACL** - probe subscribe/publish permissions for one topic or a wordlist
 - **TLS** - broker verification with system or custom CA
 - **mTLS** - mutual TLS with client certificate and private key
@@ -128,6 +129,66 @@ $ mqattack publish --tls --jwt 'eyJhbGci...' \
 # mTLS publish
 $ mqattack publish --cert client.crt --key client.key --cafile ca.crt \
   -H broker.example.com -p 8883 -t test -m 'hello'
+```
+
+### Fingerprint
+
+Identify the broker software and version by subscribing to `$SYS/#` and
+analyzing the collected messages. No packets beyond a standard SUBSCRIBE are
+sent — the broker reveals itself through what it publishes.
+
+Recognised brokers and their detection signals:
+
+| Broker | Detection signal |
+| --- | --- |
+| Mosquitto | `$SYS/broker/version` value starts with `mosquitto version` |
+| HiveMQ | `$SYS/broker/version` value starts with `HiveMQ` |
+| VerneMQ | `$SYS/broker/version` value starts with `VerneMQ` |
+| EMQX | Topics under `$SYS/brokers/` (plural); node name extracted from topic path |
+| NanoMQ | Topics under `$SYS/nanomq/` namespace |
+| RabbitMQ | `$SYS/broker/version` value contains `rabbitmq` |
+
+Confidence is reported as `high` when a known signature matches, `low` when
+`$SYS/broker/version` is present but unrecognized, and `unknown` when $SYS is
+accessible but yields no identifying information.
+
+```bash
+$ mqattack fingerprint [OPTIONS]
+
+  -w, --wait <SECS>   Collection window in seconds   [default: 5]
+      --verbose        Print all collected $SYS messages after the summary
+```
+
+**Examples**
+
+```bash
+# Fingerprint a broker on the default port
+$ mqattack fingerprint -H 192.168.1.10
+
+# Longer collection window for slow brokers, then dump everything
+$ mqattack fingerprint -H 192.168.1.10 -w 10 --verbose
+
+# Fingerprint over TLS with credentials
+$ mqattack fingerprint --cafile ca.crt -H broker.example.com -p 8883 \
+  -u admin -P secret
+```
+
+Example output (Mosquitto):
+
+```text
+[+] Broker Fingerprint
+    Software:              Mosquitto
+    Version:               2.0.18
+    Confidence:            high
+    Build info:            With OpenSSL 3.0.2 15 Mar 2022
+
+    Uptime:                12345 seconds
+    Clients connected:     3
+    Clients total:         47
+    Messages received:     1082
+    Messages sent:         2341
+
+[*] 47 $SYS message(s) collected (use --verbose to see all)
 ```
 
 ### Check ACL

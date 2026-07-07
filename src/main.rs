@@ -20,6 +20,8 @@ enum Commands {
     Subscribe(commands::subscribe::SubscribeArgs),
     /// Publish a message to a topic
     Publish(commands::publish::PublishArgs),
+    /// Identify the broker software, version, and key stats via $SYS analysis
+    Fingerprint(commands::fingerprint::FingerprintArgs),
     /// Collect broker metadata from the $SYS/# topic
     SysInfo(commands::sys_info::SysInfoArgs),
     /// Enumerate active topics using a wordlist or brute-force
@@ -40,6 +42,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::BruteAuth(args) => commands::brute_auth::run(args).await,
         Commands::Subscribe(args) => commands::subscribe::run(args).await,
         Commands::Publish(args) => commands::publish::run(args).await,
+        Commands::Fingerprint(args) => commands::fingerprint::run(args).await,
         Commands::SysInfo(args) => commands::sys_info::run(args).await,
         Commands::EnumTopics(args) => commands::enum_topics::run(args).await,
         Commands::CheckAcl(args) => commands::check_acl::run(args).await,
