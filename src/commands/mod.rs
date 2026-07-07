@@ -1,3 +1,4 @@
+pub mod brute_auth;
 pub mod check_acl;
 pub mod enum_perms;
 pub mod enum_topics;

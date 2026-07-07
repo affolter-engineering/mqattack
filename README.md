@@ -188,6 +188,69 @@ mqattack enum-topics -H 192.168.1.10 --brute --prefix home --max-length 4
 mqattack enum-topics -H 192.168.1.10 --brute --prefix home --depth 2 -t 10
 ```
 
+### Brute-force authentication
+
+Test username/password combinations against the broker. Four attack modes are
+supported, all using the broker's ConnAck return code to distinguish success
+from failure (e.g. `BadUserNamePassword` vs. `NotAuthorized`).
+
+| Mode | Flags | Use case |
+|---|---|---|
+| Credential pairs | `-c FILE` | Test a pre-built `username:password` list |
+| Single-user brute-force | `-u USER -W FILE` | Dictionary attack on one account |
+| Password spray | `-U FILE -P PASS` | One password against many users |
+| Cross-product | `-U FILE -W FILE` | All combinations (capped at 10 000, override with `--force`) |
+
+`--try-anonymous` probes a no-credentials connection before any wordlist attempt.
+
+```bash
+$ mqattack brute-auth [OPTIONS]
+
+  -c, --credentials <FILE>   Credential pairs file (username:password per line)
+  -U, --user-list <FILE>     Username wordlist
+  -W, --pass-list <FILE>     Password wordlist
+      --try-anonymous        Test anonymous access first
+      --stop-on-success      Stop after the first successful login
+      --delay <MS>           Milliseconds between attempts        [default: 0]
+      --timeout <SECS>       Seconds to wait per attempt          [default: 5]
+      --force                Override the cross-product safety cap
+```
+
+The credential pairs file uses `username:password` per line.
+Blank lines and lines starting with `#` are ignored.
+The first `:` is the separator; passwords may contain additional colons.
+
+```
+# credentials.txt
+admin:admin
+admin:password
+# no password
+guest
+# password contains a colon
+service:pass:word
+```
+
+#### Examples
+
+```bash
+# Quick probe: test anonymous access then a credential list, stop on first hit
+$ mqattack brute-auth -H 192.168.1.10 --try-anonymous -c credentials.txt --stop-on-success
+
+# Dictionary attack on a single account
+$ mqattack brute-auth -H 192.168.1.10 -u admin -W /usr/share/wordlists/rockyou.txt
+
+# Password spray: one password across many users (with a 500 ms delay to avoid lockouts)
+$ mqattack brute-auth -H 192.168.1.10 -U users.txt -P 'Mqtt@2024' --delay 500
+
+# Full cross-product brute-force over TLS
+$ mqattack brute-auth --cafile ca.crt -H broker.example.com -p 8883 \
+  -U users.txt -W passwords.txt
+
+# Pipe valid credentials directly into enum-perms to map their permissions
+$ mqattack brute-auth -H 192.168.1.10 -c credentials.txt | grep 'SUCCESS' | \
+  awk '{print $2}' > valid.txt && \
+  mqattack enum-perms -H 192.168.1.10 -c valid.txt -w topics.txt
+```
 
 ## License
 

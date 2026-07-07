@@ -14,6 +14,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Brute-force broker authentication using credential pairs or wordlists
+    BruteAuth(commands::brute_auth::BruteAuthArgs),
     /// Subscribe to one or more topics and print incoming messages
     Subscribe(commands::subscribe::SubscribeArgs),
     /// Publish a message to a topic
@@ -35,6 +37,7 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::BruteAuth(args) => commands::brute_auth::run(args).await,
         Commands::Subscribe(args) => commands::subscribe::run(args).await,
         Commands::Publish(args) => commands::publish::run(args).await,
         Commands::SysInfo(args) => commands::sys_info::run(args).await,
