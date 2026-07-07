@@ -7,3 +7,4 @@ pub mod payload_inject;
 pub mod publish;
 pub mod subscribe;
 pub mod sys_info;
+pub mod will_inject;

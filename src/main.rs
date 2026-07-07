@@ -32,6 +32,8 @@ enum Commands {
     EnumPerms(commands::enum_perms::EnumPermsArgs),
     /// Publish a series of injection payloads to a topic to probe downstream systems
     PayloadInject(commands::payload_inject::PayloadInjectArgs),
+    /// Register a crafted Last Will and trigger it via ungraceful disconnect
+    WillInject(commands::will_inject::WillInjectArgs),
 }
 
 #[tokio::main]
@@ -48,5 +50,6 @@ async fn main() -> anyhow::Result<()> {
         Commands::CheckAcl(args) => commands::check_acl::run(args).await,
         Commands::EnumPerms(args) => commands::enum_perms::run(args).await,
         Commands::PayloadInject(args) => commands::payload_inject::run(args).await,
+        Commands::WillInject(args) => commands::will_inject::run(args).await,
     }
 }
