@@ -7,7 +7,7 @@ use std::io::{BufRead, BufReader};
 use tokio::time::{timeout, Duration};
 
 #[derive(Debug, Clone, PartialEq)]
-enum AclStatus {
+pub enum AclStatus {
     Allowed,
     Denied,
     Inconclusive,
@@ -167,7 +167,7 @@ pub async fn run(args: CheckAclArgs) -> Result<()> {
 
 /// Connect, subscribe to `topic`, wait for a SubAck, and report the ACL outcome.
 /// A broker that disconnects after the subscribe is sent is treated as DENIED.
-async fn test_subscribe(conn: &ConnectionArgs, topic: &str, wait_secs: u64) -> AclStatus {
+pub async fn test_subscribe(conn: &ConnectionArgs, topic: &str, wait_secs: u64) -> AclStatus {
     let opts = match build_options(conn) {
         Ok(o) => o,
         Err(_) => return AclStatus::Inconclusive,
@@ -215,7 +215,7 @@ async fn test_subscribe(conn: &ConnectionArgs, topic: &str, wait_secs: u64) -> A
 /// Connect, publish to `topic` at `qos`, wait for an acknowledgement, and report the ACL outcome.
 /// QoS 0 is always inconclusive because there is no broker acknowledgement.
 /// A broker disconnect after the publish is treated as DENIED.
-async fn test_publish(
+pub async fn test_publish(
     conn: &ConnectionArgs,
     topic: &str,
     payload: &[u8],

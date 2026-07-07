@@ -24,6 +24,10 @@ enum Commands {
     EnumTopics(commands::enum_topics::EnumTopicsArgs),
     /// Test subscribe/publish ACL permissions for one or more topics
     CheckAcl(commands::check_acl::CheckAclArgs),
+    /// Test subscribe/publish permissions across multiple users and build a permission matrix
+    EnumPerms(commands::enum_perms::EnumPermsArgs),
+    /// Publish a series of injection payloads to a topic to probe downstream systems
+    PayloadInject(commands::payload_inject::PayloadInjectArgs),
 }
 
 #[tokio::main]
@@ -36,5 +40,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::SysInfo(args) => commands::sys_info::run(args).await,
         Commands::EnumTopics(args) => commands::enum_topics::run(args).await,
         Commands::CheckAcl(args) => commands::check_acl::run(args).await,
+        Commands::EnumPerms(args) => commands::enum_perms::run(args).await,
+        Commands::PayloadInject(args) => commands::payload_inject::run(args).await,
     }
 }
