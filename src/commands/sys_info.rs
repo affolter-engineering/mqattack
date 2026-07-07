@@ -31,7 +31,7 @@ pub async fn run(args: SysInfoArgs) -> Result<()> {
     eprintln!("[*] Connecting to {}:{}", conn.host, conn.port);
     eprintln!("[*] Subscribing to $SYS/#");
     if !args.live {
-        eprintln!("[*] Collecting for {} second(s)...\n", args.wait);
+        eprintln!("[*] Collecting for {} second(s) ...\n", args.wait);
     }
 
     let wait_secs = args.wait;
@@ -65,7 +65,7 @@ pub async fn run(args: SysInfoArgs) -> Result<()> {
 
 fn print_summary(map: &BTreeMap<String, String>) {
     if map.is_empty() {
-        eprintln!("[!] No $SYS messages received. The broker may not publish $SYS, or access is restricted.");
+        eprintln!("[!] No $SYS messages received. The broker may not publish $SYS or access is restricted.");
         return;
     }
 

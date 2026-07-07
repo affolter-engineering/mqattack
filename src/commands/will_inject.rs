@@ -101,7 +101,7 @@ pub async fn run(args: WillInjectArgs) -> Result<()> {
         .ok();
 
     eprintln!("[+] Connected - will registered with broker");
-    eprintln!("[*] Holding for {}s before triggering...", args.hold);
+    eprintln!("[*] Holding for {}s before triggering ...", args.hold);
 
     sleep(Duration::from_secs(args.hold)).await;
 
@@ -112,7 +112,7 @@ pub async fn run(args: WillInjectArgs) -> Result<()> {
     eprintln!("[+] Disconnected ungracefully - will fired");
 
     if monitor_handle.is_some() {
-        eprintln!("[*] Monitoring for {}s...", args.monitor_wait);
+        eprintln!("[*] Monitoring for {}s ...", args.monitor_wait);
         sleep(Duration::from_secs(args.monitor_wait)).await;
     }
 

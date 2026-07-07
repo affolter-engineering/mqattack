@@ -65,7 +65,7 @@ pub async fn run(args: SubscribeArgs) -> Result<()> {
             }
         }
         _ = signal::ctrl_c() => {
-            eprintln!("\n[*] Interrupted, disconnecting...");
+            eprintln!("\n[*] Interrupted, disconnecting ...");
         }
     }
 

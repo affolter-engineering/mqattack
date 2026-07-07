@@ -114,7 +114,7 @@ pub async fn run(args: PayloadInjectArgs) -> Result<()> {
 
     for (i, probe) in probes.iter().enumerate() {
         let label = if probe.label.len() > 70 {
-            format!("{}…", &probe.label[..70])
+            format!("{} ...", &probe.label[..70])
         } else {
             probe.label.clone()
         };
@@ -133,7 +133,7 @@ pub async fn run(args: PayloadInjectArgs) -> Result<()> {
     eprintln!("\n[*] Sent {} payload(s)", sent);
 
     if monitor_handle.is_some() {
-        eprintln!("[*] Waiting {}s for responses…", args.monitor_wait);
+        eprintln!("[*] Waiting {}s for responses ...", args.monitor_wait);
         sleep(Duration::from_secs(args.monitor_wait)).await;
     }
 

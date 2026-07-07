@@ -30,7 +30,7 @@ impl Attempt {
             (Some(u), Some(p)) => {
                 let s = format!("{}:{}", u, p);
                 if s.len() > 52 {
-                    format!("{}…", &s[..51])
+                    format!("{} ...", &s[..51])
                 } else {
                     s
                 }
