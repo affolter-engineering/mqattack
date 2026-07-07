@@ -64,8 +64,6 @@ $ mqattack subscribe [OPTIONS] -t <TOPIC>...
       --hex              Print payload as hexadecimal
 ```
 
-#### Examples
-
 ```bash
 # Subscribe to all topics
 $ mqattack subscribe -t '#'
@@ -113,8 +111,6 @@ $ mqattack publish [OPTIONS] -t <TOPIC> -m <MESSAGE>
   -r, --retain           Set the retain flag
 ```
 
-#### Examples
-
 ```bash
 # Publish a simple message
 $ mqattack publish -t test/topic -m 'hello'
@@ -155,8 +151,6 @@ $ mqattack check-acl [OPTIONS] (-t <TOPIC> | -w <FILE>)
   -q, --qos <QOS>         QoS for publish probes (1 or 2)   [default: 1]
       --wait <SECS>       Seconds to wait for a broker response per test [default: 5]
 ```
-
-#### Examples
 
 ```bash
 # Test a single topic (both subscribe and publish)
@@ -220,7 +214,7 @@ The credential pairs file uses `username:password` per line.
 Blank lines and lines starting with `#` are ignored.
 The first `:` is the separator; passwords may contain additional colons.
 
-```
+```text
 # credentials.txt
 admin:admin
 admin:password
@@ -229,8 +223,6 @@ guest
 # password contains a colon
 service:pass:word
 ```
-
-#### Examples
 
 ```bash
 # Quick probe: test anonymous access then a credential list, stop on first hit
