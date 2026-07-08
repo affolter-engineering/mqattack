@@ -291,3 +291,45 @@ fn load_wordlist(path: &str) -> Result<Vec<String>> {
         .collect();
     lines.with_context(|| format!("error reading wordlist '{}'", path))
 }
+
+/// Unit tests for brute_auth.rs
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn attempt(user: Option<&str>, pass: Option<&str>) -> Attempt {
+        Attempt {
+            username: user.map(str::to_owned),
+            password: pass.map(str::to_owned),
+        }
+    }
+
+    #[test]
+    fn label_anonymous() {
+        assert_eq!(attempt(None, None).label(), "(anonymous)");
+    }
+
+    #[test]
+    fn label_user_no_password() {
+        assert_eq!(attempt(Some("admin"), None).label(), "admin:(none)");
+    }
+
+    #[test]
+    fn label_user_with_password() {
+        assert_eq!(attempt(Some("admin"), Some("secret")).label(), "admin:secret");
+    }
+
+    #[test]
+    fn label_password_containing_colon() {
+        assert_eq!(attempt(Some("svc"), Some("pass:word")).label(), "svc:pass:word");
+    }
+
+    #[test]
+    fn label_truncates_at_52_chars() {
+        let long_pass = "x".repeat(60);
+        let label = attempt(Some("u"), Some(&long_pass)).label();
+        // "u:" + 60 x's = 62 chars > 52, so must be truncated with " ..."
+        assert!(label.ends_with(" ..."));
+        assert!(label.len() <= 56); // 51 chars + " ..."
+    }
+}

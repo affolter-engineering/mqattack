@@ -254,3 +254,60 @@ fn combine_depth(segments: &[String], depth: usize) -> Vec<String> {
     }
     result
 }
+
+/// Unit tests for topic enumeration
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn estimate_count_single_char_max1() {
+        assert_eq!(estimate_count(1, 1), 1);
+    }
+
+    #[test]
+    fn estimate_count_binary_alphabet_depth3() {
+        // 2^1 + 2^2 + 2^3 = 2 + 4 + 8 = 14
+        assert_eq!(estimate_count(2, 3), 14);
+    }
+
+    #[test]
+    fn gen_segments_length1() {
+        let segs = gen_segments("ab", 1);
+        assert_eq!(segs, vec!["a", "b"]);
+    }
+
+    #[test]
+    fn gen_segments_length2_contains_all_pairs() {
+        let segs = gen_segments("ab", 2);
+        // Length-1 first, then length-2
+        assert!(segs.contains(&"a".to_string()));
+        assert!(segs.contains(&"b".to_string()));
+        assert!(segs.contains(&"aa".to_string()));
+        assert!(segs.contains(&"ab".to_string()));
+        assert!(segs.contains(&"ba".to_string()));
+        assert!(segs.contains(&"bb".to_string()));
+        assert_eq!(segs.len(), 6); // 2 + 4
+    }
+
+    #[test]
+    fn combine_depth_1_is_identity() {
+        let segs: Vec<String> = vec!["a".into(), "b".into()];
+        assert_eq!(combine_depth(&segs, 1), segs);
+    }
+
+    #[test]
+    fn combine_depth_2_joins_with_slash() {
+        let segs: Vec<String> = vec!["x".into(), "y".into()];
+        let mut result = combine_depth(&segs, 2);
+        result.sort();
+        assert_eq!(result, vec!["x/x", "x/y", "y/x", "y/y"]);
+    }
+
+    #[test]
+    fn combine_depth_3_produces_three_levels() {
+        let segs: Vec<String> = vec!["a".into()];
+        let result = combine_depth(&segs, 3);
+        assert_eq!(result, vec!["a/a/a"]);
+    }
+}

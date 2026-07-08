@@ -209,7 +209,24 @@ pub fn parse_qos(level: u8) -> Result<QoS> {
     }
 }
 
-// ── Shared event-loop driver ──────────────────────────────────────────────────
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rumqttc::QoS;
+
+    #[test]
+    fn parse_qos_valid() {
+        assert_eq!(parse_qos(0).unwrap(), QoS::AtMostOnce);
+        assert_eq!(parse_qos(1).unwrap(), QoS::AtLeastOnce);
+        assert_eq!(parse_qos(2).unwrap(), QoS::ExactlyOnce);
+    }
+
+    #[test]
+    fn parse_qos_invalid() {
+        assert!(parse_qos(3).is_err());
+        assert!(parse_qos(255).is_err());
+    }
+}
 
 /// Drive `eventloop` until `on_publish` returns `false`, the connection drops,
 /// or the caller's enclosing `tokio::select!` branch is cancelled.
@@ -239,7 +256,7 @@ where
     }
 }
 
-/// Convenience: build an `AsyncClient` + `EventLoop` from connection args,
+/// Convenience: build an `AsyncClient` and `EventLoop` from connection args,
 /// subscribe to each topic at the given QoS, and return both handles.
 pub async fn connect_and_subscribe(
     args: &ConnectionArgs,

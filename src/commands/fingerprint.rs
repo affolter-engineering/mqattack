@@ -245,3 +245,95 @@ fn analyze(msgs: &BTreeMap<String, String>) -> FingerprintResult {
 fn get(msgs: &BTreeMap<String, String>, key: &str) -> Option<String> {
     msgs.get(key).cloned()
 }
+
+/// Unit tests for fingerprinting
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn msgs(pairs: &[(&str, &str)]) -> BTreeMap<String, String> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect()
+    }
+
+    #[test]
+    fn fingerprint_mosquitto() {
+        let m = msgs(&[("$SYS/broker/version", "mosquitto version 2.0.18")]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("Mosquitto"));
+        assert_eq!(fp.version.as_deref(), Some("2.0.18"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_hivemq() {
+        let m = msgs(&[("$SYS/broker/version", "HiveMQ 4.12.0")]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("HiveMQ"));
+        assert_eq!(fp.version.as_deref(), Some("4.12.0"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_vernemq() {
+        let m = msgs(&[("$SYS/broker/version", "VerneMQ 1.13.0")]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("VerneMQ"));
+        assert_eq!(fp.version.as_deref(), Some("1.13.0"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_emqx_node_name() {
+        let m = msgs(&[
+            ("$SYS/brokers/emqx@localhost/version", "5.0.0"),
+            ("$SYS/brokers/emqx@localhost/uptime", "12345 seconds"),
+        ]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("EMQX"));
+        assert_eq!(fp.version.as_deref(), Some("5.0.0"));
+        assert_eq!(fp.node_name.as_deref(), Some("emqx@localhost"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_nanomq() {
+        let m = msgs(&[("$SYS/nanomq/version", "0.18.0")]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("NanoMQ"));
+        assert_eq!(fp.version.as_deref(), Some("0.18.0"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_rabbitmq() {
+        let m = msgs(&[("$SYS/broker/version", "3.10.0-rabbitmq")]);
+        let fp = analyze(&m);
+        assert_eq!(fp.software.as_deref(), Some("RabbitMQ"));
+        assert_eq!(fp.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn fingerprint_low_confidence_unknown_version() {
+        let m = msgs(&[("$SYS/broker/version", "SomeBroker 9.9.9")]);
+        let fp = analyze(&m);
+        assert!(fp.software.is_none());
+        assert_eq!(fp.version.as_deref(), Some("SomeBroker 9.9.9"));
+        assert_eq!(fp.confidence, Confidence::Low);
+    }
+
+    #[test]
+    fn fingerprint_empty_messages() {
+        let fp = analyze(&BTreeMap::new());
+        assert!(fp.software.is_none());
+        assert_eq!(fp.confidence, Confidence::Unknown);
+    }
+
+    #[test]
+    fn fingerprint_sys_without_version() {
+        let m = msgs(&[("$SYS/broker/uptime", "999 seconds")]);
+        let fp = analyze(&m);
+        assert!(fp.software.is_none());
+        assert_eq!(fp.confidence, Confidence::Unknown);
+        assert_eq!(fp.uptime.as_deref(), Some("999 seconds"));
+    }
+}

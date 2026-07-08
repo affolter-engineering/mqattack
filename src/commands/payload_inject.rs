@@ -356,3 +356,79 @@ fn load_wordlist(path: &str) -> Result<Vec<Probe>> {
     }
     Ok(probes)
 }
+
+/// Unit tests for payload sets
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn labels(probes: &[Probe]) -> Vec<&str> {
+        probes.iter().map(|p| p.label.as_str()).collect()
+    }
+
+    #[test]
+    fn sql_probes_not_empty_and_contains_classic() {
+        let probes = sql_probes();
+        assert!(!probes.is_empty());
+        assert!(labels(&probes).contains(&"' OR '1'='1"));
+        assert!(labels(&probes).contains(&"1; DROP TABLE users--"));
+    }
+
+    #[test]
+    fn cmd_probes_not_empty_and_contains_id() {
+        let probes = cmd_probes();
+        assert!(!probes.is_empty());
+        assert!(labels(&probes).contains(&"; id"));
+        assert!(labels(&probes).contains(&"| cat /etc/passwd"));
+    }
+
+    #[test]
+    fn xss_probes_not_empty_and_contains_script_tag() {
+        let probes = xss_probes();
+        assert!(!probes.is_empty());
+        assert!(labels(&probes).contains(&"<script>alert(1)</script>"));
+    }
+
+    #[test]
+    fn fmt_probes_not_empty_and_contains_percent_s() {
+        let probes = fmt_probes();
+        assert!(!probes.is_empty());
+        assert!(labels(&probes).contains(&"%s%s%s%s"));
+    }
+
+    #[test]
+    fn xxe_probes_not_empty_and_all_are_xml() {
+        let probes = xxe_probes();
+        assert!(!probes.is_empty());
+        for p in &probes {
+            let s = std::str::from_utf8(&p.data).unwrap();
+            assert!(s.starts_with("<?xml") || s.contains("xi:include"), "not XML: {}", s);
+        }
+    }
+
+    #[test]
+    fn json_probes_not_empty_and_contains_null() {
+        let probes = json_probes();
+        assert!(!probes.is_empty());
+        assert!(labels(&probes).contains(&"null"));
+    }
+
+    #[test]
+    fn mqtt_probes_includes_empty_and_size_variants() {
+        let probes = mqtt_probes();
+        assert!(!probes.is_empty());
+        let empty = probes.iter().find(|p| p.data.is_empty());
+        assert!(empty.is_some(), "expected an empty-payload probe");
+        let kb1 = probes.iter().find(|p| p.data.len() == 1_024);
+        assert!(kb1.is_some(), "expected a 1 KB probe");
+        let kb64 = probes.iter().find(|p| p.data.len() == 65_535);
+        assert!(kb64.is_some(), "expected a 64 KB probe");
+    }
+
+    #[test]
+    fn tp_helper_roundtrip() {
+        let p = tp("hello");
+        assert_eq!(p.label, "hello");
+        assert_eq!(p.data, b"hello");
+    }
+}
