@@ -43,7 +43,7 @@ jobs:
              dist/mqattack-${{ matrix.target }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mqattack-${{ matrix.target }}
           path: dist/mqattack-${{ matrix.target }}
