@@ -32,6 +32,15 @@ Requires Rust 1.80+, a C compiler and OpenSSL development headers.
 $ cargo build --release
 ```
 
+### Nixpkgs
+
+For Nix or NixOS users is a package available. Keep in mind that the latest releases might only
+be present in the ``unstable`` channel.
+
+```bash
+ $ nix-env -iA nixos.mqattack
+```
+
 ## Usage
 
 All commands share a common set of connection and authentication options:
