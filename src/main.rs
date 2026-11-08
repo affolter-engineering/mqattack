@@ -34,6 +34,8 @@ enum Commands {
     PayloadInject(commands::payload_inject::PayloadInjectArgs),
     /// Register a crafted Last Will and trigger it via ungraceful disconnect
     WillInject(commands::will_inject::WillInjectArgs),
+    /// Check whether the broker accepts anonymous connections and probe topic ACLs without credentials
+    ProbeAnon(commands::probe_anon::ProbeAnonArgs),
 }
 
 #[tokio::main]
@@ -51,5 +53,6 @@ async fn main() -> anyhow::Result<()> {
         Commands::EnumPerms(args) => commands::enum_perms::run(args).await,
         Commands::PayloadInject(args) => commands::payload_inject::run(args).await,
         Commands::WillInject(args) => commands::will_inject::run(args).await,
+        Commands::ProbeAnon(args) => commands::probe_anon::run(args).await,
     }
 }
