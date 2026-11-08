@@ -14,5 +14,6 @@
   - [enum-perms](./commands/enum-perms.md)
   - [will-inject](./commands/will-inject.md)
   - [payload-inject](./commands/payload-inject.md)
+  - [probe-anon](./commands/probe-anon.md)
 - [Workflows](./workflows.md)
 - [Development](./development.md)

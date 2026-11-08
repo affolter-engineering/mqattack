@@ -1,6 +1,6 @@
 # Commands
 
-`mqattack` provides ten subcommands grouped by purpose:
+`mqattack` provides eleven subcommands grouped by purpose:
 
 ## Reconnaissance
 
@@ -31,5 +31,6 @@
 | [`brute-auth`](./brute-auth.md) | Brute-force or spray MQTT credentials |
 | [`will-inject`](./will-inject.md) | Register a crafted Last Will to inject messages on disconnect |
 | [`payload-inject`](./payload-inject.md) | Publish built-in or custom injection payloads |
+| [`probe-anon`](./probe-anon.md) | Check for anonymous access and probe topic ACLs without credentials |
 
 All commands accept the [common connection and authentication flags](../connection.md).
