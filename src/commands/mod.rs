@@ -4,6 +4,7 @@ pub mod enum_perms;
 pub mod enum_topics;
 pub mod fingerprint;
 pub mod payload_inject;
+pub mod probe_anon;
 pub mod publish;
 pub mod subscribe;
 pub mod sys_info;

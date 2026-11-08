@@ -8,6 +8,7 @@ A Rust-based MQTT penetration testing tool for the command line.
 - **Publish** - send a payload to a topic
 - **Fingerprinting** - allows to identify the MQTT broker
 - **Check ACL** - probe subscribe/publish permissions for one topic or a wordlist
+- **Anonymous probe** - single-shot check for unauthenticated access and what topics it can reach
 - **TLS** - broker verification with system or custom CA
 - **mTLS** - mutual TLS with client certificate and private key
 - **JWT authentication** - send a JWT token as the MQTT password
@@ -237,6 +238,63 @@ $ mqattack check-acl --cafile ca.crt -H broker.example.com -p 8883 -w topics.txt
 
 # Use a custom payload and a longer wait window
 $ mqattack check-acl -H 192.168.1.10 -t 'sensor/temp' --payload 'test' --wait 10
+```
+
+### Probe anonymous access
+
+Check in a single shot whether the broker accepts unauthenticated connections.
+If it does, optionally probe subscribe and publish permissions on a topic or
+wordlist — identical ACL checks to `check-acl` but always without credentials.
+Any `-u`/`-P`/`--jwt` flags are silently ignored with a warning.
+
+```bash
+$ mqattack probe-anon [OPTIONS]
+
+  -t, --topic <TOPIC>     Single topic to probe (mutually exclusive with --wordlist)
+  -w, --wordlist <FILE>   File with one topic per line (mutually exclusive with --topic)
+      --no-subscribe      Skip subscribe permission tests
+      --no-publish        Skip publish permission tests
+      --payload <TEXT>    Payload used for publish probes    [default: mqattack]
+  -q, --qos <QOS>         QoS for publish probes (1 or 2)   [default: 1]
+      --wait <SECS>       Seconds to wait for a broker response per test [default: 5]
+```
+
+```bash
+# Quick check — does the broker allow anonymous connections at all?
+$ mqattack probe-anon -H 192.168.1.10
+
+# Check anonymous connectivity and probe a single topic
+$ mqattack probe-anon -H 192.168.1.10 -t '#'
+
+# Check against a full topic wordlist
+$ mqattack probe-anon -H 192.168.1.10 -w topics.txt
+
+# Subscribe-only probe over TLS
+$ mqattack probe-anon --cafile ca.crt -H broker.example.com -p 8883 \
+  -w topics.txt --no-publish
+```
+
+Example output:
+
+```text
+[*] Target : 192.168.1.10:1883
+[+] Anonymous access ALLOWED
+
+[*] 3 topic(s) | subscribe=true | publish=true
+
+    home/lights/1                                       sub=ALLOWED       pub=ALLOWED
+    home/alarm/status                                   sub=ALLOWED       pub=DENIED
+    $SYS/broker/version                                 sub=INCONCLUSIVE  pub=DENIED
+
+[+] Subscribe : 2 allowed, 0 denied, 1 inconclusive
+[+] Publish   : 1 allowed, 2 denied, 0 inconclusive
+
+[+] Topics with subscribe ALLOWED:
+    home/lights/1
+    home/alarm/status
+
+[+] Topics with publish ALLOWED:
+    home/lights/1
 ```
 
 ### Enumerate topics
