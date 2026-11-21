@@ -19,8 +19,8 @@ A Rust-based MQTT penetration testing tool for the command line.
 ### From source (with Nix)
 
 ```bash
-$ nix-shell
-$ cargo build --release
+nix-shell
+cargo build --release
 ```
 
 The binary is placed at `target/release/mqattack`.
@@ -30,7 +30,7 @@ The binary is placed at `target/release/mqattack`.
 Requires Rust 1.80+, a C compiler and OpenSSL development headers.
 
 ```bash
-$ cargo build --release
+cargo build --release
 ```
 
 ### Nixpkgs
@@ -39,7 +39,7 @@ For Nix or NixOS users is a package available. Keep in mind that the latest rele
 be present in the ``unstable`` channel.
 
 ```bash
- $ nix-env -iA nixos.mqattack
+nix-env -iA nixos.mqattack
 ```
 
 ## Usage
@@ -150,7 +150,7 @@ sent — the broker reveals itself through what it publishes.
 Recognised brokers and their detection signals:
 
 | Broker | Detection signal |
-| --- | --- |
+| ------ | ---------------- |
 | Mosquitto | `$SYS/broker/version` value starts with `mosquitto version` |
 | HiveMQ | `$SYS/broker/version` value starts with `HiveMQ` |
 | VerneMQ | `$SYS/broker/version` value starts with `VerneMQ` |
@@ -317,7 +317,7 @@ supported, all using the broker's ConnAck return code to distinguish success
 from failure (e.g. `BadUserNamePassword` vs. `NotAuthorized`).
 
 | Mode | Flags | Use case |
-|---|---|---|
+| ---- | ----- | -------- |
 | Credential pairs | `-c FILE` | Test a pre-built `username:password` list |
 | Single-user brute-force | `-u USER -W FILE` | Dictionary attack on one account |
 | Password spray | `-U FILE -P PASS` | One password against many users |
@@ -381,6 +381,7 @@ and publishes the will payload to all current and (if retained) future
 subscribers of the target topic.
 
 This can be used to:
+
 - Inject messages into topics that ACLs would otherwise block for direct publish
 - Poison retained messages that persist on a topic until explicitly cleared
 - Trigger downstream automation or alert logic by spoofing sensor states
