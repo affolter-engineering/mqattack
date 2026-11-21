@@ -15,7 +15,7 @@ name = "mqattack"
 path = "src/main.rs"
 
 [dependencies]
-rumqttc = "0.24"
+rumqttc = "0.25"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
