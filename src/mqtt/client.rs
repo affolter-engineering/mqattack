@@ -94,7 +94,7 @@ fn build_tls_config(args: &ConnectionArgs) -> Result<TlsConfiguration> {
                 root_store.add(cert.context("invalid certificate in CA file")?)?;
             }
         } else {
-            for cert in rustls_native_certs::load_native_certs().unwrap_or_default() {
+            for cert in rustls_native_certs::load_native_certs().certs {
                 root_store.add(cert).ok();
             }
         }

@@ -15,12 +15,12 @@ name = "mqattack"
 path = "src/main.rs"
 
 [dependencies]
-rumqttc = "0.25"
+rumqttc = { version = "0.25", default-features = false, features = ["use-rustls-no-provider"] }
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
 chrono = "0.4"
 hex = "0.4"
-rustls = "0.22"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "logging", "tls12"] }
 rustls-pemfile = "2"
-rustls-native-certs = "0.7"
+rustls-native-certs = "0.8"
