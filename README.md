@@ -36,7 +36,7 @@ cargo build --release
 ### Nixpkgs
 
 For Nix or NixOS users is a package available. Keep in mind that the latest releases might only
-be present in the ``unstable`` channel.
+be present in the `unstable` channel.
 
 ```bash
 nix-env -iA nixos.mqattack
@@ -144,8 +144,8 @@ $ mqattack publish --cert client.crt --key client.key --cafile ca.crt \
 ### Fingerprint
 
 Identify the broker software and version by subscribing to `$SYS/#` and
-analyzing the collected messages. No packets beyond a standard SUBSCRIBE are
-sent — the broker reveals itself through what it publishes.
+analyzing the collected messages. No packets beyond a standard `SUBSCRIBE` are
+sent. The broker reveals itself through what it publishes.
 
 Recognised brokers and their detection signals:
 
@@ -206,7 +206,7 @@ Example output (Mosquitto):
 Probe subscribe and/or publish permissions for one topic or a list of topics.
 Each test connects fresh to the broker and inspects the SubAck/PubAck returned.
 Results are reported as `ALLOWED`, `DENIED`, `INCONCLUSIVE` (no acknowledgement
-received), or `SKIPPED`.
+received) or `SKIPPED`.
 
 > **Note:** publish probes require QoS 1 or 2 (`-q 1` or `-q 2`) to get a
 > broker acknowledgement. QoS 0 always yields `INCONCLUSIVE` for publish.
@@ -244,7 +244,7 @@ $ mqattack check-acl -H 192.168.1.10 -t 'sensor/temp' --payload 'test' --wait 10
 
 Check in a single shot whether the broker accepts unauthenticated connections.
 If it does, optionally probe subscribe and publish permissions on a topic or
-wordlist — identical ACL checks to `check-acl` but always without credentials.
+wordlist. Identical ACL checks to `check-acl` but always without credentials.
 Any `-u`/`-P`/`--jwt` flags are silently ignored with a warning.
 
 ```bash
@@ -314,14 +314,14 @@ mqattack enum-topics -H 192.168.1.10 --brute --prefix home --depth 2 -t 10
 
 Test username/password combinations against the broker. Four attack modes are
 supported, all using the broker's ConnAck return code to distinguish success
-from failure (e.g. `BadUserNamePassword` vs. `NotAuthorized`).
+from failure (e.g., `BadUserNamePassword` vs. `NotAuthorized`).
 
 | Mode | Flags | Use case |
 | ---- | ----- | -------- |
 | Credential pairs | `-c FILE` | Test a pre-built `username:password` list |
 | Single-user brute-force | `-u USER -W FILE` | Dictionary attack on one account |
 | Password spray | `-U FILE -P PASS` | One password against many users |
-| Cross-product | `-U FILE -W FILE` | All combinations (capped at 10 000, override with `--force`) |
+| Cross-product | `-U FILE -W FILE` | All combinations (capped at 10000, override with `--force`) |
 
 `--try-anonymous` probes a no-credentials connection before any wordlist attempt.
 
